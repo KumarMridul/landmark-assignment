@@ -1,7 +1,5 @@
 import React, {Fragment} from 'react';
 
-//import { Button } from 'office-ui-fabric-react/lib/Button';
-
 const MainStyle = {
   formElement: {
     marginBottom: '20px',
@@ -28,7 +26,7 @@ const MainStyle = {
   }
 }
 
-class Main extends React.Component {
+class Main extends React.PureComponent {
     constructor(props) {
         super(props);
         this.state = {
@@ -39,6 +37,7 @@ class Main extends React.Component {
             emailError: false
         };
         this.records = [];
+        this.timedRecords = [];
         this.handleNameChange = this.handleNameChange.bind(this);
         this.handlePhoneChange = this.handlePhoneChange.bind(this);
         this.handleEmailChange = this.handleEmailChange.bind(this);
@@ -59,34 +58,42 @@ class Main extends React.Component {
       }
       handleTiming= () => {
         if (this.records.length>0) {
-            let recordsArray = [...this.records];
+            let recordsArray = JSON.parse(JSON.stringify(this.records));
             for(var i=0;i<recordsArray.length;i++) {
                 let createdTime = recordsArray[i].time;
-                let timeRange = new Date().toTimeString().split(' G')[0].split(':'),
+                let timeRange = this.displayCurrentTime().split(':'),
                    hour = parseInt(timeRange[0]),
-                   min = parseInt(timeRange[1]),
-                   sec = parseInt(timeRange[2]);
-                let createdTimeRange = createdTime.split(' G')[0].split(':'),
+                   min = parseInt(timeRange[1]);
+                let createdTimeRange = createdTime.split(':'),
                    chour = parseInt(createdTimeRange[0]),
-                   cmin = parseInt(createdTimeRange[1]),
-                   csec = parseInt(createdTimeRange[2]);
-               // if (hour !== 0) {
-                let diffhour = `${hour - chour} hours`,
-                     diffmin = `${min - cmin} minutes`,
-                     diffsec =  `${sec - csec} seconds ago`;
-                     recordsArray[i].time = `${diffhour} ${diffmin} ${diffsec}`;    
-            //     }
-            //     else {
-            //         if ((hour - chour) < 0)
-            //     }    
-            // }
+                   cmin = parseInt(createdTimeRange[1]);
+              
+                let diffhour = hour - chour,
+                     diffmin = min - cmin;
+                if(diffhour === 0) {
+                    recordsArray[i].time = `${diffmin} minute ago`; 
+                }
+
+                if (diffhour > 0) {
+                    recordsArray[i].time = `${diffhour} hour ago`; 
+                }
+
+                if(diffmin === 0) {
+                    recordsArray[i].time = `just now`;
+                }
         }
-         this.records = recordsArray;
+         this.timedRecords = recordsArray;
       }
-    }  
+    }
+    displayCurrentTime() {
+        var date = new Date();
+        var hours = date.getHours() < 10 ? "0" + date.getHours() : date.getHours();
+        var minutes = date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
+        var seconds = date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
+        return (hours + ":" + minutes + ":" + seconds);
+    }; 
       handleSubmit(event) {
         event.preventDefault();  
-        debugger;
         let emailFound = false;
         for(var i=0;i<this.records.length;i++) {
             if(this.records[i].email === this.state.email) {
@@ -95,7 +102,7 @@ class Main extends React.Component {
             }
         }
         if (!emailFound) {
-            this.records = [...this.records, { time: new Date().toTimeString(), name: this.state.name, phone: this.state.phone, email: this.state.email, password: this.state.password, id: (parseInt(Math.random()*111)).toString()}];
+            this.records = [...this.records, { time: this.displayCurrentTime(), name: this.state.name, phone: this.state.phone, email: this.state.email, password: this.state.password, id: (parseInt(Math.random()*111)).toString()}];
             this.setState(({
                 emailError: false
             }),() => {
@@ -141,7 +148,8 @@ class Main extends React.Component {
                 </form>
         </div>: 
       <div style={MainStyle.gridStyle}>
-        { this.records.length > 0 && 
+      {this.timedRecords.length === 0 && <div> No Records Submitted</div>}
+        { this.timedRecords.length > 0 && 
         <table className="table">
         <thead>
             <tr>
@@ -154,7 +162,7 @@ class Main extends React.Component {
             </tr>
         </thead>
         <tbody>
-            {this.records.map((record, index) => {
+            {this.timedRecords.map((record, index) => {
                 return (<tr key={index}>
                     <td>{record.id}</td>
                     <td>{record.name}</td>

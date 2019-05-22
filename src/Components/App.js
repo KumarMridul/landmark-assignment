@@ -22,7 +22,8 @@ class App extends React.Component {
     }
     else {
       this.setState({
-        show: selected
+        show: selected,
+        handleTiming: false
       })
     }
   }
