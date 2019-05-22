@@ -158,7 +158,7 @@ class Main extends React.PureComponent {
             <th>Phone</th>
             <th>Email</th>
             <th>Password</th>
-            <th>Time</th>
+            <th>Created Time</th>
             </tr>
         </thead>
         <tbody>
